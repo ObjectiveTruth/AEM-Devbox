@@ -1,0 +1,43 @@
+---
+- hosts: all
+  tasks:
+   - name: Update all packages
+     dnf: name=* state=latest
+     become: true
+
+   - name: Install Vim
+     dnf: name=vim state=latest
+     become: true
+
+   - name: Install OpenJDK (1.8)
+     dnf: name=java state=latest
+     become: true
+
+   - name: Install Maven
+     dnf: name=maven state=latest
+     become: true
+
+   - name: Install Git
+     dnf: name=git state=latest
+     become: true
+
+   # AEM fails without this
+   - name: Set open file limit for vagrant users
+     pam_limits: domain=vagrant limit_type=hard limit_item=nofile value=64000
+     become: true
+
+   - name: Install AEM if not exists
+     command: java -Xmx1850m -jar aem-author-4502.jar -unpack -b "../aem"
+     args:
+        chdir: /home/vagrant/aem_install_files/
+        creates: /home/vagrant/aem/crx-quickstart
+
+   - name: Install systemctl entry for AEM
+     copy: src="resources/aem.service" dest="/usr/lib/systemd/system/aem.service"
+     become: true
+
+   - name: Start the systemctl AEM deamon from the previous step
+     service: name="aem" state=started
+     become: true
+     
+

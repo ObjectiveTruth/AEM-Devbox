@@ -1,0 +1,9 @@
+[Unit]
+Description="Adobe Experience Manager"
+
+[Service]
+ExecStart=/home/vagrant/aem/crx-quickstart/bin/start
+ExecStop=/home/vagrant/aem/crx-quickstart/bin/stop
+Type=forking
+PIDFile=/home/vagrant/aem/crx-quickstart/conf/cq.pid
+
