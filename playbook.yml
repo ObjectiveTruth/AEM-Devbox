@@ -33,7 +33,7 @@
         creates: /home/vagrant/aem/crx-quickstart
 
    - name: Copy the license.properties file
-     command: mv license.properties ../aem/
+     command: cp license.properties ../aem/
      args:
         chdir: /home/vagrant/aem_install_files/
 
