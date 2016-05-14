@@ -32,6 +32,11 @@
         chdir: /home/vagrant/aem_install_files/
         creates: /home/vagrant/aem/crx-quickstart
 
+   - name: Copy the license.properties file
+     command: mv license.properties ../aem/
+     args:
+        chdir: /home/vagrant/aem_install_files/
+
    - name: Install systemctl entry for AEM
      copy: src="resources/aem.service" dest="/usr/lib/systemd/system/aem.service"
      become: true
