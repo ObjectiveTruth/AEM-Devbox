@@ -27,7 +27,7 @@
      become: true
 
    - name: Install AEM if not exists
-     command: java -Xmx1850m -jar aem-author-4502.jar -unpack -b "../aem"
+     command: java -jar aem-author-4502.jar -unpack -b "../aem"
      args:
         chdir: /home/vagrant/aem_install_files/
         creates: /home/vagrant/aem/crx-quickstart
