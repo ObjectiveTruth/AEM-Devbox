@@ -15,10 +15,12 @@ Vagrant.configure(2) do |config|
 
     config.vm.provider "virtualbox" do |vb|
         # AEM recomments at least 1920 mb to work properly
-        vb.memory = "2048"
+        vb.memory = "3072"
+        vb.cpus = 2
     end
     
     # Disable default rsync folder and setup new one
+    config.vm.synced_folder ".", "/vagrant", disabled: true
     config.vm.synced_folder "./aem_install_files", "/home/vagrant/aem_install_files", disabled: false, type: "rsync", create: true
 
     # Creates host-only static ip address on the machine's private network
