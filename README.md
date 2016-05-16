@@ -3,19 +3,15 @@ Vagrantfile and resources to make a development instance of AEM in Virtualbox
 
 ## Requirements
 
-* `vagrant 1.8.1` or higher
-
-  `vagrant --version`
+* `vagrant 1.8.1` or higher [Installig Vagrant](https://www.vagrantup.com/docs/installation/)
   
-* `Ansible 2.0.1.0` or higher 
+* `Ansible 2.0.1.0` or higher  [Installing Ansible](http://docs.ansible.com/ansible/intro_installation.html)
 
-  `ansible --version`
-
-## Usage
+## Setup
 
 1. Place your `aem-author-4502.jar` and `license.properties` inside `/aem_install_files/`
 
-  Folder structure should look like this:
+  Folder structure should look like this(The readme.md is already in the repo):
   ```
   ├── LICENSE
   ├── Vagrantfile
@@ -35,6 +31,16 @@ Vagrantfile and resources to make a development instance of AEM in Virtualbox
 4. :question: :question: :question:
 
 5. Profit :rocket:
+
+## Options
+
+Changing of JVM/AEM parameters can be done in `resources/aem.service` using an `Environment directive`. 
+
+[Getting started with Fedora Unit files](https://fedoramagazine.org/systemd-getting-a-grip-on-units/)
+
+Learn more about [systemctl](https://www.freedesktop.org/software/systemd/man/systemctl.html)
+
+Starting and stopping of the AEM service from inside the VB can be done using `systemctl start aem` or `systemctl stop aem` (Don't forget to sudo)
 
 ## License
 
