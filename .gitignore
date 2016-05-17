@@ -1,5 +1,9 @@
 # Custom project specific
-aem_install_files/packages/*
+aem_install_files/packages/public/*.*
+!aem_install_files/packages/public/README.md
+aem_install_files/packages/secure/*.*
+!aem_install_files/packages/secure/README.md
+aem_install_files/packages/*.*
 !aem_install_files/packages/README.md
 aem_install_files/*.*
 !aem_install_files/readme.md
