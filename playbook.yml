@@ -31,11 +31,23 @@
      args:
         chdir: /home/vagrant/aem_install_files/
         creates: /home/vagrant/aem/crx-quickstart
+     become: false
 
    - name: Copy the license.properties file
      command: cp license.properties ../aem/
      args:
         chdir: /home/vagrant/aem_install_files/
+        creates: /home/vagrant/aem/license.properties
+     become: false
+
+   - name: Make install directory
+     command: mkdir -p /home/vagrant/aem/crx-quickstart/install 
+     args:
+        creates: /home/vagrant/aem/crx-quickstart/install
+     become: false
+
+#   - name: Copy all the packages that will be installed in aem
+#     shell: cp ${HOME}/aem_install_files/packages_to_install/*.zip ${HOME}/aem/crx-quickstart/install/
 
    - name: Install systemctl entry for AEM
      copy: src="resources/aem.service" dest="/usr/lib/systemd/system/aem.service"
@@ -44,5 +56,35 @@
    - name: Start the systemctl AEM deamon from the previous step
      service: name="aem" state=started
      become: true
+
+   - name: Waiting for the port to be bound
+     wait_for: port=4502 
+
+   - name: Wait for the server to come up
+     shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
+     register: result
+     until: result.stdout.find("Sign In") != -1
+     retries: 60
+     become: false
+
+   - name: Install and Activate AEM Service Pack 1 package (automatically restarts the server)
+     command: curl -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip" -F name="aem-service-pkg-wrapper-6.1.SP1" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp
+     become: false
+
+   - name: Wait for the server to come up
+     shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
+     register: afterFirstRestart
+     until: afterFirstRestart.stdout.find("Sign In") != -1
+     retries: 60
+     become: false
+   
+   - name: Get list of content packs to install
+     shell: ls /home/vagrant/aem_install_files/packages_to_install/content/*
+     register: packages_list
+
+   - name: Install all content packs
+     shell: 'curl --fail -u admin:admin -F file=@"{{item}}" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 2'
+     with_items: packages_list.stdout_lines
+     become: false
      
 
