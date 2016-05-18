@@ -68,13 +68,23 @@
      become: false
 
    - name: Install and Activate AEM Service Pack 1 package (automatically restarts the server)
-     command: curl -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip" -F name="aem-service-pkg-wrapper-6.1.SP1" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp
+     command: curl -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp
      become: false
 
    - name: Wait for the server to come up
      shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
-     register: afterFirstRestart
-     until: afterFirstRestart.stdout.find("Sign In") != -1
+     register: afterServicePackInstall
+     until: afterServicePackInstall.stdout.find("Sign In") != -1
+     retries: 60
+     become: false
+   
+   - name: Install ACS-Commons Library (automatically restarts the server)
+     shell: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp 
+
+   - name: Wait for the server to come up
+     shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
+     register: afterACSCommonsInstall
+     until: afterACSCommonsInstall.stdout.find("Sign In") != -1
      retries: 60
      become: false
    
