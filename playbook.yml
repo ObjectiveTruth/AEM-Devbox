@@ -67,9 +67,13 @@
      retries: 60
      become: false
 
-   - name: Install and Activate AEM Service Pack 1 package (automatically restarts the server)
-     command: curl -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp
-     become: false
+   - name: Check if AEM Service Pack 1 has been installed
+     command: curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls
+     register: installedBundlesPreSP1Check
+
+   - name: Install and Activate AEM Service Pack 1 package (automatically restarts the server) if not installed
+     command: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp
+     when: installedBundlesPreSP1Check.stdout.find("aem-service-pkg-wrapper-6.1.SP1.zip") == -1
 
    - name: Wait for the server to come up
      shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
@@ -77,9 +81,14 @@
      until: afterServicePackInstall.stdout.find("Sign In") != -1
      retries: 60
      become: false
+
+   - name: Check if ACS-Commons Library has been installed
+     command: curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls
+     register: installedBundlesPreACSCommonsCheck
    
-   - name: Install ACS-Commons Library (automatically restarts the server)
-     shell: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp 
+   - name: Install ACS-Commons Library (automatically restarts the server) if not installed
+     command: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp 
+     when: installedBundlesPreACSCommonsCheck.stdout.find("acs-aem-commons-content-2.4.2.zip") == -1
 
    - name: Wait for the server to come up
      shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
@@ -87,13 +96,21 @@
      until: afterACSCommonsInstall.stdout.find("Sign In") != -1
      retries: 60
      become: false
+
+   - name: Check if UI-apps has been installed
+     command: curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls
+     register: installedBundlesPreUIAppsCheck
+
+   - name: Install ui-apps (components) if not installed
+     shell: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/gc-aem.ui.apps-1.12.1.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp 
+     when: installedBundlesPreUIAppsCheck.stdout.find("gc-aem.ui.apps-1.12.1.zip") == -1
    
    - name: Get list of content packs to install
      shell: ls /home/vagrant/aem_install_files/packages_to_install/content/*
      register: packages_list
 
    - name: Install all content packs
-     shell: 'curl --fail -u admin:admin -F file=@"{{item}}" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 2'
+     shell: 'if [[ $(curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls) != *$(basename "{{item}}")* ]]; then curl --fail -u admin:admin -F file=@"{{item}}" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 2; fi'
      with_items: packages_list.stdout_lines
      become: false
      

@@ -24,7 +24,7 @@ Vagrantfile and resources to make a development instance of AEM in Virtualbox
   
 2. `vagrant up` from project root (might take a while)
 
-3. Navigate to `192.168.99.43:4502` to access AEM
+3. Navigate to `localhost:4502` to access AEM
 
   *You can now safely remove the `jar` and `license.properties` placed from step 2*
 

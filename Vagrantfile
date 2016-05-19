@@ -27,10 +27,8 @@ Vagrant.configure(2) do |config|
     config.vm.network "private_network", ip: "192.168.99.43"
 
     # Ports for AdobeEM 
-    # Uncomment below if you want to access via localhost:xxxx
-    # where xxxx is the port listed below.
-    #config.vm.network "forwarded_port", guest: 4502, host: 4502
-    #config.vm.network "forwarded_port", guest: 45335, host: 45335
+    config.vm.network "forwarded_port", guest: 4502, host: 4502
+    config.vm.network "forwarded_port", guest: 45335, host: 45335
 
     # Required to use ansible with dnf installer
     config.vm.provision "shell", inline: "dnf install python-dnf -y"
