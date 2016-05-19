@@ -87,7 +87,7 @@
      register: installedBundlesPreACSCommonsCheck
    
    - name: Install ACS-Commons Library (automatically restarts the server) if not installed
-     command: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp 
+     shell: 'curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 5'
      when: installedBundlesPreACSCommonsCheck.stdout.find("acs-aem-commons-content-2.4.2.zip") == -1
 
    - name: Wait for the server to come up
