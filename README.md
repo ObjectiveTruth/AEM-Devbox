@@ -11,14 +11,27 @@ Vagrantfile and resources to make a development instance of AEM in Virtualbox
 
 1. Place your `aem-author-4502.jar` and `license.properties` inside `/aem_install_files/`
 
+2. Content packs will be installed in alphabetical order inside `/aem_install_files/packages_to_install/`
+
+3. Packages that require restart should be placed inside `/aem_install_files/packages_to_install/servicepacks/`
+
   Folder structure should look like this(The readme.md is already in the repo):
   ```
   ├── LICENSE
+  ├── README.md
   ├── Vagrantfile
   ├── aem_install_files
   │   ├── aem-author-4502.jar
   │   ├── license.properties
+  │   ├── packages_to_install
+  │   │   ├── content
+  │   │   │   ├── example-content-pack.zip
+  │   │   └── servicepacks
+  │   │       ├── README.md
+  │   │       ├── acs-aem-commons-content-xxx.zip
+  │   │       ├── aem-service-pkg-wrapper-xxx.zip
   │   └── readme.md
+  ├── playbook.yml
   └── resources
   ```
   
@@ -28,7 +41,7 @@ Vagrantfile and resources to make a development instance of AEM in Virtualbox
 
   *You can now safely remove the `jar` and `license.properties` placed from step 2*
 
-4. :question: :question: :question:
+4. :question::question::question:
 
 5. Profit :rocket:
 
