@@ -46,11 +46,8 @@
         creates: /home/vagrant/aem/crx-quickstart/install
      become: false
 
-#   - name: Copy all the packages that will be installed in aem
-#     shell: cp ${HOME}/aem_install_files/packages_to_install/*.zip ${HOME}/aem/crx-quickstart/install/
-
    - name: Install systemctl entry for AEM
-     copy: src="resources/aem.service" dest="/usr/lib/systemd/system/aem.service"
+     copy: src="aem_install_files/resources/aem.service" dest="/usr/lib/systemd/system/aem.service"
      become: true
 
    - name: Start the systemctl AEM deamon from the previous step
@@ -61,49 +58,43 @@
      wait_for: port=4502 
 
    - name: Wait for the server to come up
-     shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
+     shell: 'curl 127.0.0.1:4502 -L -s -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
      register: result
      until: result.stdout.find("Sign In") != -1
      retries: 60
-     become: false
 
-   - name: Check if AEM Service Pack 1 has been installed
-     command: curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls
-     register: installedBundlesPreSP1Check
-
-   - name: Install and Activate AEM Service Pack 1 package (automatically restarts the server) if not installed
-     command: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp
-     when: installedBundlesPreSP1Check.stdout.find("aem-service-pkg-wrapper-6.1.SP1.zip") == -1
+   - name: Install/Activate AEM SP 1 if not installed (Restarts server on install)
+     command: resources/install_aem_package.sh -f packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip -u 127.0.0.1:4502
+     args:
+        chdir: /home/vagrant/aem_install_files/
+     register: sp1_install_check
+     changed_when: sp1_install_check.stdout.find("Package already installed") == -1
 
    - name: Wait for the server to come up
-     shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
+     shell: 'curl 127.0.0.1:4502 -L -s -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
      register: afterServicePackInstall
      until: afterServicePackInstall.stdout.find("Sign In") != -1
      retries: 60
-     become: false
 
-   - name: Check if ACS-Commons Library has been installed
-     command: curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls
-     register: installedBundlesPreACSCommonsCheck
-   
-   - name: Install ACS-Commons Library (automatically restarts the server) if not installed
-     shell: 'curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 5'
-     when: installedBundlesPreACSCommonsCheck.stdout.find("acs-aem-commons-content-2.4.2.zip") == -1
+   - name: Install/Activate ACS-Commons if not installed (Restarts server on install)
+     command: resources/install_aem_package.sh -f packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip -u 127.0.0.1:4502
+     args:
+        chdir: /home/vagrant/aem_install_files/
+     register: acs_commons_check
+     changed_when: acs_commons_check.stdout.find("Package already installed") == -1
 
    - name: Wait for the server to come up
-     shell: 'curl 127.0.0.1:4502 -L -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
+     shell: 'curl 127.0.0.1:4502 -L -s -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
      register: afterACSCommonsInstall
      until: afterACSCommonsInstall.stdout.find("Sign In") != -1
      retries: 60
-     become: false
-
-   - name: Check if UI-apps has been installed
-     command: curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls
-     register: installedBundlesPreUIAppsCheck
 
    - name: Install ui-apps (components) if not installed
-     shell: curl --fail -u admin:admin -F file=@"/home/vagrant/aem_install_files/packages_to_install/servicepacks/gc-aem.ui.apps-1.12.1.zip" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp 
-     when: installedBundlesPreUIAppsCheck.stdout.find("gc-aem.ui.apps-1.12.1.zip") == -1
+     command: resources/install_aem_package.sh -f packages_to_install/servicepacks/gc-aem.ui.apps-1.12.1.zip -u 127.0.0.1:4502
+     args:
+        chdir: /home/vagrant/aem_install_files/
+     register: ui_apps_check
+     changed_when: ui_apps_check.stdout.find("Package already installed") == -1
    
    - name: Get list of content packs to install
      shell: ls /home/vagrant/aem_install_files/packages_to_install/content/*
@@ -112,6 +103,5 @@
    - name: Install all content packs
      shell: 'if [[ $(curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls) != *$(basename "{{item}}")* ]]; then curl --fail -u admin:admin -F file=@"{{item}}" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 2; fi'
      with_items: packages_list.stdout_lines
-     become: false
      
 
