@@ -77,7 +77,7 @@
      retries: 60
 
    - name: Install/Activate ACS-Commons if not installed (Restarts server on install)
-     command: resources/install_aem_package.sh -f packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip -u 127.0.0.1:4502
+     command: resources/install_aem_package.sh -f packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip -u 127.0.0.1:4502 -s acs-aem-commons-content-2.4.2.zip
      args:
         chdir: /home/vagrant/aem_install_files/
      register: acs_commons_check
@@ -99,9 +99,12 @@
    - name: Get list of content packs to install
      shell: ls /home/vagrant/aem_install_files/packages_to_install/content/*
      register: packages_list
+     changed_when: false
 
    - name: Install all content packs
-     shell: 'if [[ $(curl --fail -u admin:admin http://localhost:4502/crx/packmgr/service.jsp?cmd=ls) != *$(basename "{{item}}")* ]]; then curl --fail -u admin:admin -F file=@"{{item}}" -F force=true -F install=true localhost:4502/crx/packmgr/service.jsp && sleep 2; fi'
+     command: resources/install_aem_package.sh -f packages_to_install/content/{{item}} -u 127.0.0.1:4502
+     args:
+        chdir: /home/vagrant/aem_install_files/
      with_items: packages_list.stdout_lines
      
 
