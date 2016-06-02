@@ -57,12 +57,6 @@
    - name: Waiting for the port to be bound
      wait_for: port=4502 
 
-   - name: Wait for the server to come up
-     shell: 'curl 127.0.0.1:4502 -L -s -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
-     register: result
-     until: result.stdout.find("Sign In") != -1
-     retries: 60
-
    - name: Install/Activate AEM SP 1 if not installed (Restarts server on install)
      command: resources/install_aem_package.sh -f packages_to_install/servicepacks/aem-service-pkg-wrapper-6.1.SP1.zip -u 127.0.0.1:4502
      args:
@@ -70,24 +64,12 @@
      register: sp1_install_check
      changed_when: sp1_install_check.stdout.find("Package already installed") == -1
 
-   - name: Wait for the server to come up
-     shell: 'curl 127.0.0.1:4502 -L -s -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
-     register: afterServicePackInstall
-     until: afterServicePackInstall.stdout.find("Sign In") != -1
-     retries: 60
-
    - name: Install/Activate ACS-Commons if not installed (Restarts server on install)
      command: resources/install_aem_package.sh -f packages_to_install/servicepacks/acs-aem-commons-content-2.4.2-min.zip -u 127.0.0.1:4502 -s acs-aem-commons-content-2.4.2.zip
      args:
         chdir: /home/vagrant/aem_install_files/
      register: acs_commons_check
      changed_when: acs_commons_check.stdout.find("Package already installed") == -1
-
-   - name: Wait for the server to come up
-     shell: 'curl 127.0.0.1:4502 -L -s -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"'
-     register: afterACSCommonsInstall
-     until: afterACSCommonsInstall.stdout.find("Sign In") != -1
-     retries: 60
 
    - name: Install ui-apps (components) if not installed
      command: resources/install_aem_package.sh -f packages_to_install/servicepacks/gc-aem.ui.apps-1.12.1.zip -u 127.0.0.1:4502
