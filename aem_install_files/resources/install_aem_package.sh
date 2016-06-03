@@ -41,7 +41,7 @@ fi
 
 # Check to make sure the server is up and ready for accepting uploads
 retry_counter=0 
-retry_attempts=3;
+retry_attempts=30;
 
 until [ $retry_counter -ge ${retry_attempts} ]
 do
@@ -50,7 +50,7 @@ do
             echo "AEM Server ${aem_url} is ready, attempting to install...";
             break;
         else
-            echo "AEM Server ${aem_url} isn't ready, retrying in 10 seconds...";
+            echo "AEM Server ${aem_url} isn't ready(${retry_counter}/${retry_attempts}), retrying in 10 seconds...";
     fi
     retry_counter=$[$retry_counter+1]
 
@@ -59,7 +59,7 @@ do
             echo "AEM Server ${aem_url} wasn't ready after ${retry_counter} retries attempts. This is fatal";
         exit 1;
     fi
-    sleep 10
+    sleep 10;
 done
 
 if [[ $(curl --fail -sS -u admin:admin ${aem_url}/crx/packmgr/service.jsp?cmd=ls) != *${package_file_search}* ]]; 

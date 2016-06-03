@@ -40,12 +40,6 @@
         creates: /home/vagrant/aem/license.properties
      become: false
 
-   - name: Make install directory
-     command: mkdir -p /home/vagrant/aem/crx-quickstart/install 
-     args:
-        creates: /home/vagrant/aem/crx-quickstart/install
-     become: false
-
    - name: Install systemctl entry for AEM
      copy: src="aem_install_files/resources/aem.service" dest="/usr/lib/systemd/system/aem.service"
      become: true
@@ -84,7 +78,7 @@
      changed_when: false
 
    - name: Install all content packs
-     command: resources/install_aem_package.sh -f packages_to_install/content/{{item}} -u 127.0.0.1:4502
+     command: resources/install_aem_package.sh -f '{{item}}' -u 127.0.0.1:4502
      args:
         chdir: /home/vagrant/aem_install_files/
      with_items: packages_list.stdout_lines
